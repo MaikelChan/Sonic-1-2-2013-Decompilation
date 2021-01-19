@@ -29,6 +29,7 @@ int InitRenderDevice()
 
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
     SDL_SetHint(SDL_HINT_RENDER_VSYNC, Engine.vsync ? "1" : "0");
+    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "direct3d11");
 
     Engine.window = SDL_CreateWindow(gameTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_XSIZE, SCREEN_YSIZE,
                                      SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
@@ -44,6 +45,10 @@ int InitRenderDevice()
         printLog("ERROR: failed to create renderer!");
         return 0;
     }
+
+    SDL_RendererInfo rendererInfo;
+    SDL_GetRendererInfo(Engine.renderer, &rendererInfo);
+    printLog("Renderer used: %s", rendererInfo.name);
 
     SDL_RenderSetLogicalSize(Engine.renderer, SCREEN_XSIZE, SCREEN_YSIZE);
     SDL_SetRenderDrawBlendMode(Engine.renderer, SDL_BLENDMODE_BLEND);
@@ -78,7 +83,7 @@ int InitRenderDevice()
         SDL_SetWindowBordered(Engine.window, SDL_FALSE);
     }
 
-    SDL_SetWindowResizable(Engine.window, SDL_FALSE);
+    //SDL_SetWindowResizable(Engine.window, SDL_FALSE);
     SDL_SetWindowPosition(Engine.window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 
     SDL_DisplayMode disp;
