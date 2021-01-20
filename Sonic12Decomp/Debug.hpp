@@ -4,6 +4,7 @@
 extern bool endLine;
 inline void printLog(const char *msg, ...)
 {
+#ifndef RETRO_DISABLE_LOG
     if (engineDebugMode) {
         char buffer[0x100];
 
@@ -35,10 +36,12 @@ inline void printLog(const char *msg, ...)
             fClose(file);
         }
     }
+#endif
 }
 
 inline void printLog(const ushort *msg)
 {
+#ifndef RETRO_DISABLE_LOG
     if (engineDebugMode) {
         int mPos = 0;
         while (msg[mPos]) {
@@ -71,6 +74,7 @@ inline void printLog(const ushort *msg)
             fClose(file);
         }
     }
+#endif
 }
 
 enum DevMenuMenus {
@@ -98,7 +102,7 @@ void processStageSelect();
 
 // added due to lack of normal main menu
 void initStartMenu(int mode);
-void processStartMenu(); 
+void processStartMenu();
 void setTextMenu(int mode);
 
-#endif //!DEBUG_H
+#endif //! DEBUG_H

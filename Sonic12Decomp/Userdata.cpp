@@ -41,8 +41,10 @@ void InitUserdata()
 
         ini.SetBool("Dev", "DevMenu", Engine.devMenu = false);
         ini.SetBool("Dev", "EngineDebugMode", engineDebugMode = false);
-        ini.SetInteger("Dev", "StartingCategory", Engine.startList = 0);
-        ini.SetInteger("Dev", "StartingScene", Engine.startStage = 0);
+        ini.SetInteger("Dev", "StartingCategory", Engine.startList = 255);
+        ini.SetInteger("Dev", "StartingScene", Engine.startStage = 255);
+        ini.SetInteger("Dev", "StartingPlayer", Engine.startPlayer = 255);
+        ini.SetInteger("Dev", "StartingSaveFile", Engine.startSave = 255);
         ini.SetInteger("Dev", "FastForwardSpeed", Engine.fastForwardSpeed = 8);
         ini.SetBool("Dev", "UseHQModes", Engine.useHQModes = true);
 
@@ -51,7 +53,7 @@ void InitUserdata()
         ini.SetBool("Window", "FullScreen", Engine.startFullScreen = DEFAULT_FULLSCREEN);
         ini.SetBool("Window", "Borderless", Engine.borderless = false);
         ini.SetBool("Window", "VSync", Engine.vsync = false);
-        ini.SetInteger("Window", "WindowScale", Engine.windowScale = DEFAULT_WINDOW_SCALE);
+        ini.SetInteger("Window", "WindowScale", Engine.windowScale = 2);
         ini.SetInteger("Window", "ScreenWidth", SCREEN_XSIZE = DEFAULT_SCREEN_XSIZE);
         ini.SetInteger("Window", "RefreshRate", Engine.refreshRate = 60);
 
@@ -90,9 +92,13 @@ void InitUserdata()
         if (!ini.GetBool("Dev", "EngineDebugMode", &engineDebugMode))
             engineDebugMode = false;
         if (!ini.GetInteger("Dev", "StartingCategory", &Engine.startList))
-            Engine.startList = 0;
+            Engine.startList = 255;
         if (!ini.GetInteger("Dev", "StartingScene", &Engine.startStage))
-            Engine.startStage = 0;
+            Engine.startStage = 255;
+        if (!ini.GetInteger("Dev", "StartingPlayer", &Engine.startPlayer))
+            Engine.startPlayer = 255;
+        if (!ini.GetInteger("Dev", "StartingSaveFile", &Engine.startSave))
+            Engine.startSave = 255;
         if (!ini.GetInteger("Dev", "FastForwardSpeed", &Engine.fastForwardSpeed))
             Engine.fastForwardSpeed = 8;
         if (!ini.GetBool("Dev", "UseHQModes", &Engine.useHQModes))
@@ -200,19 +206,21 @@ void writeSettings()
                    "Enable this flag to activate features used for debugging the engine (may result in slightly slower game speed)");
     ini.SetBool("Dev", "EngineDebugMode", engineDebugMode);
     ini.SetComment("Dev", "SCComment", "Sets the starting category ID");
-    ini.SetBool("Dev", "StartingCategory", Engine.startList);
+    ini.SetInteger("Dev", "StartingCategory", Engine.startList);
     ini.SetComment("Dev", "SSComment", "Sets the starting scene ID");
-    ini.SetBool("Dev", "StartingScene", Engine.startStage);
+    ini.SetInteger("Dev", "StartingScene", Engine.startStage);
+    ini.SetComment("Dev", "SPComment", "Sets the starting player ID");
+    ini.SetInteger("Dev", "StartingPlayer", Engine.startPlayer);
+    ini.SetComment("Dev", "SSaveComment", "Sets the starting save file ID");
+    ini.SetInteger("Dev", "StartingSaveFile", Engine.startSave);
     ini.SetComment("Dev", "FFComment", "Determines how fast the game will be when fastforwarding is active");
     ini.SetInteger("Dev", "FastForwardSpeed", Engine.fastForwardSpeed);
     ini.SetComment(
         "Dev", "UseHQComment",
         "Determines if applicable rendering modes (such as 3D floor from special stages) will render in \"High Quality\" mode or standard mode");
     ini.SetBool("Dev", "UseHQModes", Engine.useHQModes);
-    
-    ini.SetComment(
-        "Dev", "DataFileComment",
-        "Determines what RSDK file will be loaded");
+
+    ini.SetComment("Dev", "DataFileComment", "Determines what RSDK file will be loaded");
     ini.SetString("Dev", "DataFile", Engine.dataFile);
 
     ini.SetComment("Game", "LangComment",
@@ -247,16 +255,16 @@ void writeSettings()
 
     ini.SetComment("Controller 1", "IC1Comment", "Controller Mappings for P1 (Based on: https://wiki.libsdl.org/SDL_GameControllerButton)");
     ini.SetComment("Controller 1", "IC1Comment2", "Extra buttons can be mapped with the following IDs:");
-    ini.SetComment("Controller 1", "IC1Comment3",   "CONTROLLER_BUTTON_ZL             = 16");
-    ini.SetComment("Controller 1", "IC1Comment4",   "CONTROLLER_BUTTON_ZR             = 17");
-    ini.SetComment("Controller 1", "IC1Comment5",   "CONTROLLER_BUTTON_LSTICK_UP      = 18");
-    ini.SetComment("Controller 1", "IC1Comment6",   "CONTROLLER_BUTTON_LSTICK_DOWN    = 19");
-    ini.SetComment("Controller 1", "IC1Comment7",   "CONTROLLER_BUTTON_LSTICK_LEFT    = 20");
-    ini.SetComment("Controller 1", "IC1Comment8",   "CONTROLLER_BUTTON_LSTICK_RIGHT   = 21");
-    ini.SetComment("Controller 1", "IC1Comment9",   "CONTROLLER_BUTTON_RSTICK_UP      = 22");
-    ini.SetComment("Controller 1", "IC1Comment10",  "CONTROLLER_BUTTON_RSTICK_DOWN    = 23");
-    ini.SetComment("Controller 1", "IC1Comment11",  "CONTROLLER_BUTTON_RSTICK_LEFT    = 24");
-    ini.SetComment("Controller 1", "IC1Comment12",  "CONTROLLER_BUTTON_RSTICK_RIGHT   = 25");
+    ini.SetComment("Controller 1", "IC1Comment3", "CONTROLLER_BUTTON_ZL             = 16");
+    ini.SetComment("Controller 1", "IC1Comment4", "CONTROLLER_BUTTON_ZR             = 17");
+    ini.SetComment("Controller 1", "IC1Comment5", "CONTROLLER_BUTTON_LSTICK_UP      = 18");
+    ini.SetComment("Controller 1", "IC1Comment6", "CONTROLLER_BUTTON_LSTICK_DOWN    = 19");
+    ini.SetComment("Controller 1", "IC1Comment7", "CONTROLLER_BUTTON_LSTICK_LEFT    = 20");
+    ini.SetComment("Controller 1", "IC1Comment8", "CONTROLLER_BUTTON_LSTICK_RIGHT   = 21");
+    ini.SetComment("Controller 1", "IC1Comment9", "CONTROLLER_BUTTON_RSTICK_UP      = 22");
+    ini.SetComment("Controller 1", "IC1Comment10", "CONTROLLER_BUTTON_RSTICK_DOWN    = 23");
+    ini.SetComment("Controller 1", "IC1Comment11", "CONTROLLER_BUTTON_RSTICK_LEFT    = 24");
+    ini.SetComment("Controller 1", "IC1Comment12", "CONTROLLER_BUTTON_RSTICK_RIGHT   = 25");
     ini.SetInteger("Controller 1", "Up", inputDevice[0].contMappings);
     ini.SetInteger("Controller 1", "Down", inputDevice[1].contMappings);
     ini.SetInteger("Controller 1", "Left", inputDevice[2].contMappings);

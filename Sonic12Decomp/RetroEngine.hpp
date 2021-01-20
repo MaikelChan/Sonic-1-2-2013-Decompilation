@@ -33,8 +33,7 @@ typedef unsigned int uint;
 #define RETRO_ANDROID  (5)
 #define RETRO_WP7      (6)
 // Custom Platforms start here
-#define RETRO_VITA     (7)
-#define RETRO_NX       (8)
+#define RETRO_VITA (7)
 
 // Platform types (Game manages platform-specific code such as HUD position using this rather than the above)
 #define RETRO_STANDARD (0)
@@ -54,9 +53,6 @@ typedef unsigned int uint;
 #elif defined __vita__
 #define RETRO_PLATFORM (RETRO_VITA)
 #define RETRO_PLATTYPE (RETRO_STANDARD)
-#elif defined __SWITCH__
-#define RETRO_PLATFORM (RETRO_NX)
-#define RETRO_PLATTYPE (RETRO_STANDARD)
 #else
 #define RETRO_PLATFORM (RETRO_WIN)
 #define RETRO_PLATTYPE (RETRO_STANDARD)
@@ -64,45 +60,25 @@ typedef unsigned int uint;
 
 #if RETRO_PLATFORM == RETRO_VITA
 #if RETRO_GAME_SONIC == 1
-#define BASE_PATH            "ux0:data/Sonic1/"
-#define BASE_RO_PATH         "ux0:data/Sonic1/"
+#define BASE_PATH "ux0:data/Sonic1/"
 #elif RETRO_GAME_SONIC == 2
-#define BASE_PATH            "ux0:data/Sonic2/"
-#define BASE_RO_PATH         "ux0:data/Sonic2/"
+#define BASE_PATH "ux0:data/Sonic2/"
 #else
 #error "RETRO_GAME_SONIC not defined"
 #endif
 #define DEFAULT_SCREEN_XSIZE 480
 #define DEFAULT_FULLSCREEN   false
-#define SCREEN_YSIZE (272)
-#elif RETRO_PLATFORM == RETRO_NX
-
-#define BASE_PATH ""
-#define BASE_RO_PATH "romfs:/"
-#define DEFAULT_SCREEN_XSIZE 480
-#define DEFAULT_FULLSCREEN   false
 #define SCREEN_YSIZE         (272)
-#define DEFAULT_WINDOW_SCALE 4
-#define RETRO_DISABLE_CONTROLLER_HOTSWAP
-
 #else
-
 #define BASE_PATH            ""
-#define BASE_RO_PATH         ""
-#define DEFAULT_SCREEN_XSIZE 424 
+#define DEFAULT_SCREEN_XSIZE 424
 #define DEFAULT_FULLSCREEN   false
 #define SCREEN_YSIZE         (240)
 #define RETRO_USING_MOUSE
 #define RETRO_USING_TOUCH
-#define RETRO_USING_KEYBOARD
-
 #endif
 
-#ifndef DEFAULT_WINDOW_SCALE
-#define DEFAULT_WINDOW_SCALE 2
-#endif
-
-#if RETRO_PLATFORM == RETRO_WINDOWS || RETRO_PLATFORM == RETRO_OSX || RETRO_PLATFORM == RETRO_VITA || RETRO_PLATFORM == RETRO_NX
+#if RETRO_PLATFORM == RETRO_WINDOWS || RETRO_PLATFORM == RETRO_OSX || RETRO_PLATFORM == RETRO_VITA
 #define RETRO_USING_SDL (1)
 #else // Since its an else & not an elif these platforms probably aren't supported yet
 #define RETRO_USING_SDL (0)
@@ -231,8 +207,10 @@ public:
 
     // Ported from RSDKv5
     bool devMenu         = false;
-    int startList        = 0;
-    int startStage       = 0;
+    int startList        = -1;
+    int startStage       = -1;
+    int startPlayer      = -1;
+    int startSave        = -1;
     int gameSpeed        = 1;
     int fastForwardSpeed = 8;
     bool masterPaused    = false;
@@ -255,23 +233,23 @@ public:
 
     char gameWindowText[0x40];
     char gameDescriptionText[0x100];
-    const char *gameVersion = "1.0.0";
+    const char *gameVersion = "1.1.0";
 #if RETRO_GAMEPLATFORM == RETRO_GAME_STANDARD
-    const char *gamePlatform = "Standard"; // "STANDARD"
+    const char *gamePlatform = "STANDARD";
 #elif RETRO_GAMEPLATFORM == RETRO_GAME_MOBILE
-    const char *gamePlatform = "Mobile"; // "MOBILE"
+    const char *gamePlatform = "MOBILE";
 #endif
 
 #if RETRO_RENDERTYPE == RETRO_SW_RENDER
-    const char *gameRenderType = "SW_Rendering"; //"SW_RENDERING"
+    const char *gameRenderType = "SW_RENDERING";
 #elif RETRO_RENDERTYPE == RETRO_HW_RENDER
-    const char *gameRenderType = "HW_Rendering"; // "HW_RENDERING"
+    const char *gameRenderType = "HW_RENDERING";
 #endif
 
 #if RETRO_USE_HAPTICS
-    const char *gameHapticSetting = "Use_Haptics"; //"USE_F_FEEDBACK"; // None is default, but people with controllers exist
+    const char *gameHapticSetting = "USE_F_FEEDBACK"; // None is default, but people with controllers exist
 #else
-    const char *gameHapticSetting = "No_Haptics"; //"NO_F_FEEDBACK";
+    const char *gameHapticSetting = "NO_F_FEEDBACK";
 #endif
 
     byte gameType = GAME_UNKNOWN;

@@ -276,8 +276,8 @@ void DrawObjectList(int Layer)
         objectEntityPos = drawListEntries[Layer].entityRefs[i];
         int type           = objectEntityList[objectEntityPos].type;
         if (type) {
-            if (scriptData[objectScriptList[type].subDraw.scriptCodePtr] > 0)
-                ProcessScript(objectScriptList[type].subDraw.scriptCodePtr, objectScriptList[type].subDraw.jumpTablePtr, SUB_DRAW);
+            if (scriptData[objectScriptList[type].eventDraw.scriptCodePtr] > 0)
+                ProcessScript(objectScriptList[type].eventDraw.scriptCodePtr, objectScriptList[type].eventDraw.jumpTablePtr, EVENT_DRAW);
         }
     }
 }
@@ -290,7 +290,7 @@ void DrawStageGFX()
     if (waterDrawPos > SCREEN_YSIZE)
         waterDrawPos = SCREEN_YSIZE;
 
-    if (tLayerMidPoint <= 2) {
+    if (tLayerMidPoint < 3) {
         DrawObjectList(0);
         if (activeTileLayers[0] < LAYER_COUNT) {
             switch (stageLayouts[activeTileLayers[0]].type) {
