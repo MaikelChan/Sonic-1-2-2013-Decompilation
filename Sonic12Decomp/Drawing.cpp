@@ -90,7 +90,7 @@ int InitRenderDevice()
     }
 
     //SDL_SetWindowResizable(Engine.window, SDL_FALSE);
-    SDL_SetWindowPosition(Engine.window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+    //SDL_SetWindowPosition(Engine.window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 
     SDL_DisplayMode disp;
     if (SDL_GetDisplayMode(0, 0, &disp) == 0) {
