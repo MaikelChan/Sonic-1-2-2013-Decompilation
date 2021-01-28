@@ -9,6 +9,7 @@
 // ================
 #include <stdio.h>
 #include <string.h>
+#include <cmath>
 
 // ================
 // STANDARD TYPES
@@ -33,64 +34,67 @@ typedef unsigned int uint;
 #define RETRO_ANDROID  (5)
 #define RETRO_WP7      (6)
 // Custom Platforms start here
-#define RETRO_VITA (7)
+#define RETRO_UWP (7)
 
 // Platform types (Game manages platform-specific code such as HUD position using this rather than the above)
 #define RETRO_STANDARD (0)
 #define RETRO_MOBILE   (1)
 
 #if defined _WIN32
-#define RETRO_PLATFORM (RETRO_WIN)
-#define RETRO_PLATTYPE (RETRO_STANDARD)
+
+#if defined WINAPI_FAMILY
+#if WINAPI_FAMILY != WINAPI_FAMILY_APP
+#define RETRO_PLATFORM   (RETRO_WIN)
+#define RETRO_DEVICETYPE (RETRO_STANDARD)
+#else
+#include <WInRTIncludes.hpp>
+
+#define RETRO_PLATFORM   (RETRO_UWP)
+#define RETRO_DEVICETYPE (UAP_GetRetroGamePlatform())
+#endif
+#else
+#define RETRO_PLATFORM   (RETRO_WIN)
+#define RETRO_DEVICETYPE (RETRO_STANDARD)
+#endif
+
 #elif defined __APPLE__
 #if __IPHONEOS__
-#define RETRO_PLATTYPE (RETRO_iOS)
-#define RETRO_PLATTYPE (RETRO_MOBILE)
+#define RETRO_PLATFORM   (RETRO_iOS)
+#define RETRO_DEVICETYPE (RETRO_MOBILE)
 #else
-#define RETRO_PLATFORM (RETRO_OSX)
-#define RETRO_PLATTYPE (RETRO_STANDARD)
+#define RETRO_PLATFORM   (RETRO_OSX)
+#define RETRO_DEVICETYPE (RETRO_STANDARD)
 #endif
-#elif defined __vita__
-#define RETRO_PLATFORM (RETRO_VITA)
-#define RETRO_PLATTYPE (RETRO_STANDARD)
 #else
-#define RETRO_PLATFORM (RETRO_WIN)
-#define RETRO_PLATTYPE (RETRO_STANDARD)
+#define RETRO_PLATFORM   (RETRO_WIN)
+#define RETRO_DEVICETYPE (RETRO_STANDARD)
 #endif
 
-#if RETRO_PLATFORM == RETRO_VITA
-#if RETRO_GAME_SONIC == 1
-#define BASE_PATH "ux0:data/Sonic1/"
-#elif RETRO_GAME_SONIC == 2
-#define BASE_PATH "ux0:data/Sonic2/"
-#else
-#error "RETRO_GAME_SONIC not defined"
-#endif
-#define DEFAULT_SCREEN_XSIZE 480
-#define DEFAULT_FULLSCREEN   false
-#define SCREEN_YSIZE         (272)
-#else
-#define BASE_PATH            ""
 #define DEFAULT_SCREEN_XSIZE 424
 #define DEFAULT_FULLSCREEN   false
-#define SCREEN_YSIZE         (240)
 #define RETRO_USING_MOUSE
 #define RETRO_USING_TOUCH
+// set this to 1 (integer scale) for other platforms that don't support bilinear and don't have an even screen size
+#define RETRO_DEFAULTSCALINGMODE 2
+
+#ifndef BASE_PATH
+#define BASE_PATH ""
 #endif
 
-#if RETRO_PLATFORM == RETRO_WINDOWS || RETRO_PLATFORM == RETRO_OSX || RETRO_PLATFORM == RETRO_VITA
-#define RETRO_USING_SDL (1)
+#if RETRO_PLATFORM == RETRO_WIN || RETRO_PLATFORM == RETRO_OSX || RETRO_PLATFORM == RETRO_UWP
+#define RETRO_USING_SDL1 (0)
+#define RETRO_USING_SDL2 (1)
 #else // Since its an else & not an elif these platforms probably aren't supported yet
-#define RETRO_USING_SDL (0)
+#define RETRO_USING_SDL1 (0)
+#define RETRO_USING_SDL2 (0)
 #endif
-
-#define RETRO_GAME_STANDARD (0)
-#define RETRO_GAME_MOBILE   (1)
 
 #if RETRO_PLATFORM == RETRO_iOS || RETRO_PLATFORM == RETRO_ANDROID || RETRO_PLATFORM == RETRO_WP7
-#define RETRO_GAMEPLATFORM (RETRO_GAME_MOBILE)
+#define RETRO_GAMEPLATFORM (RETRO_MOBILE)
+#elif RETRO_PLATFORM == RETRO_UWP
+#define RETRO_GAMEPLATFORM (UAP_GetRetroGamePlatform())
 #else
-#define RETRO_GAMEPLATFORM (RETRO_GAME_STANDARD)
+#define RETRO_GAMEPLATFORM (RETRO_STANDARD)
 #endif
 
 #define RETRO_SW_RENDER  (0)
@@ -98,6 +102,13 @@ typedef unsigned int uint;
 #define RETRO_RENDERTYPE (RETRO_SW_RENDER)
 
 #define RETRO_USE_HAPTICS (1)
+
+// this macro defines the touch device read by the game (UWP requires DIRECT)
+#if RETRO_UWP
+#define RETRO_TOUCH_DEVICE 0
+#else
+#define RETRO_TOUCH_DEVICE 1
+#endif
 
 enum RetroLanguages {
     RETRO_EN = 0,
@@ -135,10 +146,15 @@ enum RetroGameType {
 };
 
 // General Defines
+#define SCREEN_YSIZE   (240)
 #define SCREEN_CENTERY (SCREEN_YSIZE / 2)
 
-#if RETRO_PLATFORM == RETRO_WIN
+#if RETRO_PLATFORM == RETRO_WIN || RETRO_PLATFORM == RETRO_UWP
+#if RETRO_USING_SDL2
 #include <SDL.h>
+#elif RETRO_USING_SDL1
+#include <SDL.h>
+#endif
 #include <vorbis/vorbisfile.h>
 #elif RETRO_PLATFORM == RETRO_OSX
 #include <SDL2/SDL.h>
@@ -146,7 +162,7 @@ enum RetroGameType {
 
 #include "cocoaHelpers.hpp"
 
-#elif RETRO_USING_SDL
+#elif RETRO_USING_SDL2
 #include <SDL2/SDL.h>
 #include <vorbis/vorbisfile.h>
 
@@ -186,6 +202,14 @@ extern bool engineDebugMode;
 class RetroEngine
 {
 public:
+    RetroEngine()
+    {
+        if (RETRO_GAMEPLATFORM == RETRO_STANDARD)
+            gamePlatform = "STANDARD";
+        else
+            gamePlatform = "MOBILE";
+    }
+
     bool usingDataFile = false;
     bool usingBytecode = false;
 
@@ -233,12 +257,8 @@ public:
 
     char gameWindowText[0x40];
     char gameDescriptionText[0x100];
-    const char *gameVersion = "1.1.0";
-#if RETRO_GAMEPLATFORM == RETRO_GAME_STANDARD
-    const char *gamePlatform = "STANDARD";
-#elif RETRO_GAMEPLATFORM == RETRO_GAME_MOBILE
-    const char *gamePlatform = "MOBILE";
-#endif
+    const char *gameVersion  = "1.1.0";
+    const char *gamePlatform = nullptr;
 
 #if RETRO_RENDERTYPE == RETRO_SW_RENDER
     const char *gameRenderType = "SW_RENDERING";
@@ -262,6 +282,7 @@ public:
     bool startFullScreen  = false; // if should start as fullscreen
     bool borderless       = false;
     bool vsync            = false;
+    int scalingMode       = RETRO_DEFAULTSCALINGMODE;
     int windowScale       = 2;
     int refreshRate       = 60; // user-picked screen update rate
     int screenRefreshRate = 60; // hardware screen update rate
@@ -271,11 +292,23 @@ public:
     int renderFrameIndex = 0;
     int skipFrameIndex   = 0;
 
-#if RETRO_USING_SDL
+    int windowXSize; // width of window/screen in the previous frame
+    int windowYSize; // height of window/screen in the previous frame
+
+#if RETRO_USING_SDL2
     SDL_Window *window          = nullptr;
     SDL_Renderer *renderer      = nullptr;
     SDL_Texture *screenBuffer   = nullptr;
     SDL_Texture *screenBuffer2x = nullptr;
+
+    SDL_Event sdlEvents;
+#endif
+
+#if RETRO_USING_SDL1
+    SDL_Surface *windowSurface = nullptr;
+
+    SDL_Surface *screenBuffer   = nullptr;
+    SDL_Surface *screenBuffer2x = nullptr;
 
     SDL_Event sdlEvents;
 #endif
